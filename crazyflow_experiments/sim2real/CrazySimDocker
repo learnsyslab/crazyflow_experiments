@@ -1,0 +1,156 @@
+# CrazySim simulator image for the sim2real experiments.
+#
+# Build from the repository root (plain `docker build -t crazysim .` from this directory works
+# too, the build copies nothing from the context):
+#
+#   docker build -f crazyflow_experiments/sim2real/CrazySimDocker -t crazysim:base .
+#   docker build -f crazyflow_experiments/sim2real/CrazySimDocker --build-arg GZ_FIX=1 -t crazysim:gz-fix .
+#   docker build -f crazyflow_experiments/sim2real/CrazySimDocker --build-arg MJ_FIX=1 -t crazysim:mj-fix .
+#
+# The mass and inertia are always patched to our drone setup (step 9). All other model patches
+# are opt-in through build args (step 13) and baked into the image before the firmware build:
+#
+#   GZ_FIX=1  Gazebo backend fixes: corrects the m4 rollingMomentCoefficient typo (1e-6 -> 1e-7,
+#             all rotors equal, damping kept) and makes the thrust chain consistent at
+#             0.12 N/motor (plugin PWM2OMEGA rescaled to the model motorConstant, rotor
+#             velocity capped at 2585 rad/s in both plugin and model).
+#   MJ_FIX=1  MuJoCo backend fix: fast rotor time constant (tau = 0.025 s instead of the
+#             identified 0.145 s). Without it, the lateral takeoff translation of the circle
+#             trajectories tips the drone over.
+#   SIM_TICK=1  Firmware clock follows the simulator: one FreeRTOS tick per simulator IMU packet
+#             instead of the wall-clock itimer, see crazysim_sim_tick.py. Removes the dependence
+#             of the firmware's EKF on the simulator's real-time factor (MuJoCo backend, 1 kHz).
+#
+#   docker build -f crazyflow_experiments/sim2real/CrazySimDocker --build-arg SIM_TICK=1 -t crazysim:simtick .
+
+FROM ubuntu:22.04
+
+# 1. Avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 2. Install System Dependencies
+RUN apt-get update && apt-get install -y software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    cmake \
+    python3.11 \
+    python3.11-dev \
+    python3.11-venv \
+    python-is-python3 \
+    swig \
+    lsb-release \
+    gnupg \
+    sudo \
+    libgl1-mesa-glx \
+    libgl1-mesa-dri \
+    x11-apps \
+    protobuf-compiler \
+    libprotobuf-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 3. Set Python 3.11 as the default 'python3'
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+
+# 4. Install pip
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
+
+# 5. Setup Gazebo Repository
+RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
+
+# 6. Install Gazebo Garden and the C++ Dev Headers
+RUN apt-get update && apt-get install -y \
+    gz-garden \
+    libgz-transport12-dev \
+    libgz-msgs9-dev \
+    libgz-math7-dev \
+    libgz-sim7-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 7. Build gz-python for Garden from source
+WORKDIR /root
+RUN git clone https://github.com/srmainwaring/gz-python.git /root/gz-python && \
+    cd /root/gz-python && \
+    export GAZEBO_VERSION=garden && \
+    export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python && \
+    mkdir build && cd build && \
+    cmake -DBUILD_TESTING=OFF .. && \
+    sed -i 's/PyBytesAsStringView(py_file_descriptor.attr("serialized_pb"))/std::string(PyBytesAsStringView(py_file_descriptor.attr("serialized_pb")))/g' _deps/pybind11_protobuf-src/pybind11_protobuf/proto_cast_util.cc && \
+    sed -i 's/PyBytesAsStringView(serialized_bytes)/std::string(PyBytesAsStringView(serialized_bytes))/g' _deps/pybind11_protobuf-src/pybind11_protobuf/proto_caster_impl.h && \
+    make -j$(nproc)
+
+# 8. Make sure Python knows where the bindings were installed
+ENV PYTHONPATH=/root/gz-python/build/python
+
+# 9. Clone CrazySim
+WORKDIR /root
+RUN git clone --recursive https://github.com/gtfactslab/CrazySim.git && \
+    sed -i 's/self.mass = 0.034  # kg/self.mass = 0.0319  # kg/' /root/CrazySim/crazyswarm2_ws/src/crazyswarm2/crazyflie_sim/crazyflie_sim/backend/np.py && \
+    sed -i 's/self.J = np.array(\[16.571710e-6, 16.655602e-6, 29.261652e-6\])/self.J = np.array([16.8e-6, 16.8e-6, 29.8e-6])/' /root/CrazySim/crazyswarm2_ws/src/crazyswarm2/crazyflie_sim/crazyflie_sim/backend/np.py
+
+# 10. Install Python Dependencies
+RUN pip3 install --no-cache-dir \
+    numpy \
+    "scipy>=1.17.0" \
+    pyyaml \
+    opencv-python \
+    matplotlib \
+    nicegui \
+    rowan \
+    cflib \
+    toml \
+    "protobuf<=3.20.3"
+
+# 11. Upgrade to the prerelease version of cflib supporting the connection
+RUN pip install --no-cache-dir git+https://github.com/bitcraze/crazyflie-lib-python.git@99ad0e3e5be8ec717fd1b0fce0b7320e4acefe6e
+
+# 12. Install MuJoCo for the CrazySim MuJoCo backend (simulator_files/mujoco)
+RUN pip3 install --no-cache-dir mujoco
+
+# 13. Optional model patches, applied before the firmware/plugin build (see header)
+ARG GZ_FIX=0
+ARG MJ_FIX=0
+RUN if [ "$GZ_FIX" = "1" ]; then \
+    JINJA=/root/CrazySim/crazyflie-firmware/tools/crazyflie-simulation/simulator_files/gazebo/models/crazyflie/model.sdf.jinja && \
+    CRTP=/root/CrazySim/crazyflie-firmware/tools/crazyflie-simulation/simulator_files/gazebo/plugins/CrazySim/CrtpUtils.h && \
+    sed -i 's|<rollingMomentCoefficient>0.000001</rollingMomentCoefficient>|<rollingMomentCoefficient>0.0000001</rollingMomentCoefficient>|g' "$JINJA" && \
+    test "$(grep -c '<rollingMomentCoefficient>0.0000001</rollingMomentCoefficient>' "$JINJA")" = "4" && \
+    sed -i -E 's|<maxRotVelocity>[0-9.]+</maxRotVelocity>|<maxRotVelocity>2585</maxRotVelocity>|g' "$JINJA" && \
+    test "$(grep -c '<maxRotVelocity>2585</maxRotVelocity>' "$JINJA")" = "4" && \
+    sed -i 's|\* 0.18f|\* 0.12f|; s|2.3375e-8f|1.7965e-8f|; s|2797.0f|2585.0f|' "$CRTP" && \
+    grep -q '0.12f' "$CRTP" && grep -q '1.7965e-8f' "$CRTP" && grep -q '2585.0f' "$CRTP"; \
+    fi
+RUN if [ "$MJ_FIX" = "1" ]; then \
+    MJPY=/root/CrazySim/crazyflie-firmware/tools/crazyflie-simulation/simulator_files/mujoco/crazysim.py && \
+    grep -q "tau = 1.0 / p\['rotor_dyn_coef_simple'\]" "$MJPY" && \
+    sed -i "s|tau = 1.0 / p\['rotor_dyn_coef_simple'\]|tau = 0.025  # MJ_FIX: fast rotor time constant|" "$MJPY"; \
+    fi
+ARG SIM_TICK=0
+COPY crazyflow_experiments/sim2real/crazysim_sim_tick.py /root/crazysim_sim_tick.py
+RUN if [ "$SIM_TICK" = "1" ]; then \
+    python3 /root/crazysim_sim_tick.py /root/CrazySim/crazyflie-firmware; \
+    fi
+
+# 14. Build Crazyflie Firmware (SITL) and the Gazebo plugin
+WORKDIR /root/CrazySim/crazyflie-firmware
+RUN mkdir -p sitl_make/build && \
+    cd sitl_make/build && \
+    cmake .. && \
+    make all
+
+# 15. Setup Environment Variables
+# We set these directly without referencing the (non-existent) previous values to avoid warnings
+ENV GZ_SIM_RESOURCE_PATH="/root/CrazySim/crazyflie-firmware/tools/crazyflie-simulation/simulator_files/gazebo/models"
+ENV GZ_SIM_SYSTEM_PLUGIN_PATH="/root/CrazySim/crazyflie-firmware/sitl_make/build"
+
+# Set startup directory
+WORKDIR /root/CrazySim/crazyflie-firmware
+
+# Make the launch script executable
+RUN chmod +x /root/CrazySim/crazyflie-firmware/tools/crazyflie-simulation/simulator_files/gazebo/launch/sitl_singleagent.sh
+
+CMD ["/bin/bash"]

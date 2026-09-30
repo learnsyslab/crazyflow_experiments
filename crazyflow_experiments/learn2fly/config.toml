@@ -1,0 +1,27 @@
+[drone]
+# Only the Crazyflie the policy is trained for, with its physical parameters from crazyflow
+id = 53
+channel = 80
+model = "cf2x_L250" # see learn2fly/controller.py
+pos_landing = [0.2, 0.2, 0.0] # landing position of the drone in global frame
+pos_update_freq = 50 # Hz, frequency for onboard estimator updates
+
+[controller]
+type = "td3" # the simulation runs the actor, the firmware runs it onboard with the state as its goal
+ctrl_freq = 100 # Hz
+
+[experiment]
+origin = [0.0, 0.0, 1.25] # position in global frame around which the trajectory is centered
+trajectory = "figure8" # type of trajectory, e.g., figure8, ellipse, figure8_bent, melon, ...
+plane = "xy" # plane in which the trajectoy lies, e.g., xy, xz. Ignored for 3d trajectories
+scaling = [2.0, 1.0, 0.0] # maximum size in m of the trajectory, [2.0, 0.0, 1.0], [3.0, 3.0, 0.0]
+time = 5.5 # time per loop of the trajectory
+n_runs = 3 # number of runs
+yaw_mode = "constant" # yaw behavior: constant, velocity, direction
+yaw_setting = 0 # yaw parameter, e.g., for constant: angle in rad, for velocity: rate in rot/T
+soft_start = true # enable/disable soft start
+
+[sim]
+physics = "first_principles" # physics model of the sim, e.g., first_principles, so_rpy_rotor_drag
+render = true # enable/disable rendering
+fps = 60

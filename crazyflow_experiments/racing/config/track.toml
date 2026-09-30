@@ -1,0 +1,142 @@
+# Level 1
+
+# | Evaluation Scenario | Randomized Inertial Properties | Randomized Obstacles, Gates | Randomized Tracks | Notes    |
+# | :-----------------: | :----------------------------: | :-------------------------: | :---------------: | :------: |
+# | `level1.toml`       | *Yes*                          | *No*                        | *No*              | Adaptive |
+[controller]
+file = "attitude_mpcc.py" # Put your controller file name here. Specifying a controller as argument to scripts will override this setting. Controllers are located in `lsy_drone_racing/control/`
+
+[deploy]
+### Settings only relevant for deployment
+# Whether to check if gate and obstacle positions observed by vicon are within the limits defined down below.
+check_race_track = true
+# Whether to check if the drone start position is within the limits specified down below.
+check_drone_start_pos = true
+# Lets you practice your controller without putting up gates & obstacles, assumes nominal positions given below.
+real_track_objects = true
+
+[[deploy.drones]]
+id = 10
+channel = 100
+drone = "cf21B_500"                        # Model of the drone, i.e., cf2x_L250, cf2x_P250, cf2x_T500, cf21B_500. For this course, we use cf21B_500
+
+
+[sim]
+# Dynamics options:
+# "first_principles": first_principles (physics based) model
+# "so_rpy": Simplified identified model.
+# "so_rpy_rotor": Simplified identified model with rotor dynamics.
+# "so_rpy_rotor_drag": Simplified identified model with rotor dynamics and drag.
+dynamics = "first_principles"
+drone = "cf21B_500"       # Model of the drone, i.e., cf2x_L250, cf2x_P250, cf2x_T500, cf21B_500. For this course, we use cf21B_500
+freq = 500                      # Simulation frequency, in Hz
+attitude_freq = 500             # Controller frequency, in Hz. This frequency is used to simulate the onboard controller, NOT for the environment's step function
+render = true                   # Enable/disable Crazyflow's GUI
+render_mode = "human"           # Show the simulation in the live GUI
+xml_path = "scene.xml"                  # MuJoCo scene, resolved relative to this config file
+camera = "lumix_cam"           # camera id or name, i.e., drone cam ids start at 0, cam names are "fpv_cam:0" or "track_cam:0", where the number is the drone id
+[[sim.cam_config]]              # only used if camera == -1, i.e., world view is activated
+distance = 3.5
+azimuth = 90.0
+elevation = -10.0
+lookat = [-0.2, 1.0, 1.0]
+
+
+[env]
+id = "DroneRacing-v0"   # "DroneRacing-v0" for single races, "MultiDroneRacing-v0" for multi-drone races. Each environment also implements a vector-environment for faster training
+seed = -1         # Either "random" for a random behavior or an integer for reproducibility
+freq = 50               # Frequency of the environment's step function, in Hz
+sensor_range = 0.7      # Range at which the exact location of gates and obstacles become visible to the drone. Objects that are not in the drone's sensor range report their nominal position.
+control_mode = "attitude"  # Control mode of the environment. Can be either "state" or "attitude"
+
+[env.track]
+randomize = false
+
+# Order in which the gates have to be passed. Entries are signed gate numbers, not gate IDs:
+# `1` means gate ID 0 in forward direction, `-1` means the same gate in reverse direction.
+gate_order = [1, 2, 3, 4]
+
+[[env.track.drones]]
+pos = [ 0.15, 0.3, 0.0,]
+rpy = [ 0.0, 0.0, 0.0,]
+vel = [ 0, 0, 0,]
+ang_vel = [ 0, 0, 0,]
+
+[[env.track.gates]]
+pos = [ -0.75, 0.4, 0.7,]
+rpy = [ 0.0, 0.0, 2.45,]
+[[env.track.gates]]
+pos = [ -1.25, 1.6, 1.2,]
+rpy = [ 0.0, 0.0, 0.5,]
+[[env.track.gates]]
+pos = [ 0.1, 1.0, 0.7,]
+rpy = [ 0.0, 0.0, -2.5,]
+[[env.track.gates]]
+pos = [ 0.45, -0.45, 1.2,]
+rpy = [ 0.0, 0.0, -0.7,]
+
+[[env.track.obstacles]]
+pos = [ -1.6, 1.0, 1.5,]
+[[env.track.obstacles]]
+pos = [ -0.4, 0.9, 1.55,]
+[[env.track.obstacles]]
+pos = [ 0.5, 1.85, 1.55,]
+[[env.track.obstacles]]
+pos = [ 2.0, 0.0, 1.55,]
+
+# If the drones exceed those bounds in real, the run will be stopped and the drone will safely be returned to the starting position
+[env.track.safety_limits]
+pos_limit_low = [-2.5, -2.0, -1e-3]
+pos_limit_high = [2.5, 2.0, 2.0]
+
+[env.disturbances.action]
+fn = "normal"
+scale = 0.001
+
+[env.disturbances.dynamics]
+fn = "uniform"
+[env.disturbances.dynamics.kwargs]
+minval = [-0.1, -0.1, -0.1]
+maxval = [0.1, 0.1, 0.1]
+
+[env.randomizations.drone_pos]
+fn = "uniform"
+[env.randomizations.drone_pos.kwargs]
+minval = [-0.1, -0.1, 0.0]
+maxval = [0.1, 0.1, 0.02]
+
+[env.randomizations.drone_rpy]
+fn = "uniform"
+[env.randomizations.drone_rpy.kwargs]
+minval = [-0.1, -0.1, -0.1]
+maxval = [0.1, 0.1, 0.1]
+
+[env.randomizations.drone_mass]
+fn = "uniform"
+[env.randomizations.drone_mass.kwargs]
+minval = -0.005
+maxval = 0.005
+
+[env.randomizations.drone_inertia]
+fn = "uniform"
+[env.randomizations.drone_inertia.kwargs]
+minval = [-0.000001, -0.000001, -0.000001]
+maxval = [0.000001, 0.000001, 0.000001]
+
+# [env.randomizations.gate_pos]
+# fn = "uniform"
+# [env.randomizations.gate_pos.kwargs]
+# minval = [-0.05, -0.05, -0.05]
+# maxval = [0.05, 0.05, 0.05]
+
+# [env.randomizations.gate_rpy]
+# fn = "uniform"
+# [env.randomizations.gate_rpy.kwargs]
+# minval = [-0.05, -0.05, -0.1]
+# maxval = [0.05, 0.05, 0.1]
+
+# [env.randomizations.obstacle_pos]
+# fn = "uniform"
+# [env.randomizations.obstacle_pos.kwargs]
+# minval = [-0.05, -0.05, -0.05]
+# maxval = [0.05, 0.05, 0.05]

@@ -1,0 +1,42 @@
+[drone]
+# Crazyflies fly over the radio with [drone.cf], any other model, e.g. racer or hb_x500, is a PX4 vehicle
+# flown through MAVROS with [drone.px4]. The physical parameters of the model come from
+# sysid/config_drones.toml
+model = "cf21B_500" # cf2x_L250, cf2x_P250, cf2x_T350, cf21B_500, racer, hb_x500
+
+[drone.cf]
+id = 3
+channel = 80
+pos_landing = [0.2, 0.2, 0.0] # landing position of the drone in global frame
+pos_update_freq = 20 # Hz, frequency for onboard estimator updates
+
+[drone.px4]
+namespace = "" # MAVROS namespace, e.g. "/drone1"
+localization = "mocap"  # gps, mocap
+stream_rate = 100 # Hz, requested for the PX4 position and attitude messages, 0 keeps the FCU's rates
+
+[controller]
+type = "mellinger" # mellinger, state
+ctrl_freq = 100  # Hz
+tilt_max = 60  # deg, limit of the commanded roll and pitch, 0 for none
+
+[experiment]
+# For sim2real experiments, we do two sets of experiments:
+# 1) Figure 8 in xz plane with 2x0x1m size and at 1.25m height
+# 2) Circle (use ellipse type) in xy plane with 3x3x0m size at 1.25m height
+origin = [0.0, 0.0, 1.25] # position in global frame around which the trajectory is centered. On a PX4 vehicle relative to the global origin of [drone.px4], x north, y west, z up
+trajectory = "ellipse" # type of trajectory, e.g., figure8, ellipse, figure8_bent, melon, ...
+plane = "xy" # plane in which the trajectoy lies, e.g., xy, xz. Ignored for 3d trajectories
+scaling = [3.0, 3.0, 0.0] # maximum size in m of the trajectory, [2.0, 0.0, 1.0], [3.0, 3.0, 0.0]
+time = 9.0 # time per loop of the trajectory
+n_runs = 3 # number of runs
+yaw_mode = "constant" # yaw behavior: constant, velocity, direction
+yaw_setting = 0 # yaw parameter, e.g., for constant: angle in rad, for velocity: rate in rot/T
+soft_start = true # enable/disable soft start
+
+[sim]
+physics = "first_principles" #physics model of the sim, e.g., first_principles, so_rpy_rotor_drag, pybullet, crazysim 
+n_rollouts = 5 # repetitions of every simulation, saved as numbered recordings like the deployments
+render = true # enable/disable rendering
+render_mode = "human" # human for GUI, rgb_array for saved video file
+fps = 60

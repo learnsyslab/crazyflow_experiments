@@ -1,0 +1,84 @@
+# diff-aero config for multi-agent position control.
+name = "multi_agent_position_control"
+obs_frame = "local"
+max_time = 20.0
+wait_before_truncate = 5.0
+max_target_vel = 10.0
+min_target_vel = 5.0
+last_action_in_obs = false
+
+[length]
+default = 10
+enabled = false
+min = 10
+max = 10
+
+[randomizer]
+enabled = true
+
+[dynamics]
+name = "discrete_pointmass"
+action_frame = "world"
+g = 9.81
+m = 0.15
+alpha = 1
+align_yaw_with_target_direction = false
+align_yaw_with_vel_ema = true
+
+[dynamics.vel_ema_factor]
+default = 0.1
+min = 0.08
+max = 0.12
+enabled = true
+
+[dynamics.D]
+default = 0.375
+min = 0.3
+max = 0.45
+enabled = true
+
+[dynamics.lmbda]
+default = 2.6
+min = 2.5
+max = 2.7
+enabled = false
+
+[dynamics.max_acc]
+[dynamics.max_acc.xy]
+default = 20
+min = 10
+max = 20
+enabled = true
+
+[dynamics.max_acc.z]
+default = 40
+min = 25
+max = 40
+enabled = true
+
+[imu]
+imu_mounting_error_range_deg = 2.0
+acc_drift_std = 0.13564659966250536
+acc_noise_std = 0.15690639999999998
+gyro_drift_std = 0.0014352700094407325
+gyro_noise_std = 0.02443460952792061
+enable_drift = true
+enable_noise = true
+
+[loss_weights]
+[loss_weights.pointmass]
+vel = 1.0
+jerk = 0.0001
+pos = 1.0
+collision = 5.0
+
+[reward_weights]
+constant = 4.0
+[reward_weights.pointmass]
+vel = 1.0
+jerk = 0.005
+pos = 1.0
+collision = 16.0
+
+[render]
+headless = true

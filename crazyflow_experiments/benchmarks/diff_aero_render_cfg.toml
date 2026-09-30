@@ -1,0 +1,192 @@
+# diff-aero config for obstacle avoidance with camera ray-casting sensor.
+# Used by diff_aero_render_benchmark.py.
+name = "obstacle_avoidance"
+dt = 0.0333
+obs_frame = "local"
+max_time = 30.0
+wait_before_truncate = 5.0
+max_target_vel = 6.0
+min_target_vel = 3.0
+last_action_in_obs = false
+r_drone = 0.2
+n_obstacles = 10
+ground_plane = true
+height_scale = 0.25
+enable_grid = false
+
+[length]
+default = 10
+enabled = false
+min = 10
+max = 10
+
+[randomizer]
+enabled = false
+
+[dynamics]
+name = "quadrotor"
+alpha = 1.0
+g = 9.81
+solver_type = "euler"
+max_w_xy = 5.0
+max_w_z = 1.0
+max_T = 4.179
+min_T = 0.0
+lmbda = 0.1
+n_substeps = 1
+action_frame = "body"
+
+[dynamics.m]
+default = 0.15
+min = 0.1
+max = 0.2
+enabled = true
+
+[dynamics.c_tau]
+default = 0.0133
+min = 0.01
+max = 0.0166
+enabled = true
+
+[dynamics.J.xy]
+default = 0.01
+min = 0.008
+max = 0.012
+enabled = true
+
+[dynamics.J.z]
+default = 0.02
+min = 0.015
+max = 0.025
+enabled = true
+
+[dynamics.D.xy]
+default = 0.6
+min = 0.5
+max = 0.7
+enabled = true
+
+[dynamics.D.z]
+default = 0.6
+min = 0.5
+max = 0.7
+enabled = true
+
+[dynamics.arm_l]
+default = 0.15
+min = 0.1
+max = 0.2
+enabled = true
+
+[dynamics.controller]
+thrust_ratio = 1.0
+torque_ratio = 1.0
+min_normed_thrust = 0.0
+min_normed_torque = [0.0, 0.0, 0.0]
+max_normed_thrust = 1.0
+max_normed_torque = [1.0, 1.0, 1.0]
+K_angvel = 0.1
+min_roll_rate = -500.0
+min_pitch_rate = -500.0
+min_yaw_rate = -500.0
+max_roll_rate = 500.0
+max_pitch_rate = 500.0
+max_yaw_rate = 500.0
+
+[imu]
+imu_mounting_error_range_deg = 2.0
+acc_drift_std = 0.13564659966250536
+acc_noise_std = 0.15690639999999998
+gyro_drift_std = 0.0014352700094407325
+gyro_noise_std = 0.02443460952792061
+enable_drift = true
+enable_noise = true
+
+# Camera sensor (Intel Realsense D435 parameters).
+# width (W) and height (H) are patched at runtime to set the ray resolution.
+# Sensor return shape: [n_envs, H, W] for depth, [n_envs, H*W, 3] for contact points.
+# Pose randomization is disabled so all envs share the same sensor orientation.
+[sensor]
+name = "camera"
+width = 64
+height = 64
+horizontal_fov = 86.0
+max_dist = 5.0
+
+[sensor.pitch_angle_deg]
+default = 0
+enabled = false
+min = 0
+max = 0
+
+[sensor.yaw_angle_deg]
+default = 0
+enabled = false
+min = 0
+max = 0
+
+[sensor.roll_angle_deg]
+default = 0
+enabled = false
+min = 0
+max = 0
+
+# n_obstacles and height_scale must match the top-level env values.
+[obstacles]
+name = "test_render_objects"
+walls = false
+ceiling = false
+n_obstacles = 10
+height_scale = 0.25
+sphere_percentage = 0.5
+sphere_radius_range = [0.1, 0.5, 0.1]
+cube_lw_range = [0.1, 0.6, 0.1]
+cube_h_range = [3.0, 5.0, 1.0]
+randomize_cube_pose = true
+cube_roll_pitch_range = 15.0
+randpos_std_min = 1.0
+randpos_std_max = 1.5
+safety_range = 1.0
+
+[loss_weights.pointmass]
+vel = 2.0
+z = 1.0
+oa = 5.0
+jerk = 0.01
+pos = 5.0
+collision = 0.0
+
+[loss_weights.quadrotor]
+vel = 1.0
+oa = 1.0
+jerk = 1.0
+pos = 5.0
+collision = 0.0
+
+[reward_weights]
+constant = 2.0
+
+[reward_weights.pointmass]
+vel = 0.0
+z = 0.0
+oa = 0.0
+jerk = 0.001
+pos = 0.0
+arrive = 1.0
+collision = 50.0
+
+[reward_weights.quadrotor]
+vel = 1.0
+oa = 1.0
+jerk = 1.0
+pos = 5.0
+collision = 50.0
+
+[render]
+headless = true
+render_n_envs = 1
+env_spacing = 10
+dt = 0.0333
+ground_plane = true
+record_video = false
+sphere_n_segments = 12

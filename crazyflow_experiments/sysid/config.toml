@@ -1,0 +1,38 @@
+[drone]
+# Crazyflies fly over the radio with [drone.cf], any other model, e.g. racer or hb_x500, is a PX4 vehicle
+# flown through MAVROS with [drone.px4]. The physical parameters of the model come from config_drones.toml
+model = "hb_x500" # cf2x_L250, cf2x_P250, cf2x_T350, cf21B_500, racer, hb_x500
+
+[drone.cf]
+id = 20
+channel = 100
+pos_landing = [0.2, 0.2, 0.05] # landing position of the drone in global frame
+pos_update_freq = 20 # Hz, frequency for onboard estimator updates
+
+[drone.px4]
+namespace = "" # MAVROS namespace, e.g. "/drone1"
+localization = "mocap"  # gps, mocap
+stream_rate = 100 # Hz, requested for the PX4 position and attitude messages, 0 keeps the FCU's rates
+
+[controller]
+type = "mellinger" # mellinger, state
+ctrl_freq = 100 # Hz
+tilt_max = 60 # deg, limit of the commanded roll and pitch, 0 for none
+
+[experiment]
+# Set of trajectories from config_trajectories.toml, flown one after another
+trajectories = "sysid_train" # lol_sysid, sysid_train, sysid_valid, sysid_train_thrust, sysid_valid_thrust
+# center of the trajectories (should be center of the experiment space). On a PX4 vehicle it is
+# relative to the takeoff position, with x north, y west and z up
+origin = [0.0, 0.0, 2.0]
+transition_time = 4.0 # s, linear move from the end of one trajectory to the start of the next
+soft_start = true # ramp into the first trajectory from a hover at its start
+# Firmware variables a Crazyflie streams to results/sysid/lol_sysid_<model>_<date>.csv for lol_sysid.py.
+# Leave empty for the rosbag based identification of the abstracted model.
+log_variables = [
+    "acc.x", "acc.y", "acc.z",
+    "motor.m1", "motor.m2", "motor.m3", "motor.m4",
+    "gyro.x", "gyro.y", "gyro.z",
+    "ctrlMel.cmd_roll", "ctrlMel.cmd_pitch", "ctrlMel.cmd_yaw", "ctrlMel.cmd_thrust",
+    "pm.vbatMV",
+]

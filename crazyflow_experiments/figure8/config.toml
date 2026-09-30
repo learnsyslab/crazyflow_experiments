@@ -1,0 +1,26 @@
+[drone]
+id = 3
+channel = 80
+model = "cf21B_500" # cf2x_L250, cf2x_P250, cf2x_T350, cf21B_500, custom
+pos_landing = [0.2, 0.2, 0.0] # landing position of the drone in global frame
+pos_update_freq = 20 # Hz, frequency for onboard estimator updates
+
+[controller]
+type = "ppo" # ppo, bptt, mpc or mellinger
+ctrl_freq = 100 # Hz
+
+[experiment]
+origin = [0.0, 0.0, 1.25] # position in global frame around which the trajectory is centered
+trajectory = "figure8" # type of trajectory, e.g., figure8, ellipse, figure8_bent, melon, ...
+plane = "xz" # plane in which the trajectoy lies, e.g., xy, xz. Ignored for 3d trajectories
+scaling = [2.0, 0.0, 1.0] # maximum size in m of the trajectory, [2.0, 0.0, 1.0], [3.0, 3.0, 0.0]
+time = 10 # time per loop of the trajectory
+n_runs = 3 # number of runs
+yaw_mode = "constant" # yaw behavior: constant, velocity, direction
+yaw_setting = 0 # yaw parameter, e.g., for constant: angle in rad, for velocity: rate in rot/T
+soft_start = true # enable/disable soft start
+
+[sim]
+physics = "first_principles" # physics model of the sim, e.g., first_principles, so_rpy_rotor_drag, gpd
+render = true # enable/disable rendering
+fps = 60

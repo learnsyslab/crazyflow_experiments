@@ -1,0 +1,387 @@
+[project]
+name = "crazyflow_experiments"
+version = "0.1.0"
+description = "Experiments to assess the Crazyflow simulator."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8,<3.14"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+]
+
+dependencies = [
+    "matplotlib",
+]
+
+[project.optional-dependencies]
+racing = [
+    "lsy_drone_racing"
+]
+crazyflow = [
+    "crazyflow @ git+https://github.com/learnsyslab/crazyflow.git@d28ec70", # pinned to what is essentially 0.4
+    "numpy>=2.0.0,<3",
+    "jax[cuda]>=0.7.2,!=0.10.2", # 0.10.2 XLA:GPU miscompiles for larger swarms
+    "mujoco==3.3.7",
+    "fire>=0.7.1,<0.8",
+    "ml-collections",
+    "polars>=1.35.0,<2",
+    "array-api-compat",
+    "array-api-extra",
+    "toml>=0.10.2",
+    "imageio[ffmpeg]>=2.37.0",
+    "tqdm",
+]
+deploy = [
+    "drone-estimators",
+    "cflib @ git+https://github.com/bitcraze/crazyflie-lib-python.git@2df6f85",
+    "lark>=1.1.8",      # to remove warning created by cfclient using old version of lark
+]
+mppi = ["dppy"]
+rl = [
+    "flax",
+    "optax",
+    "gymnasium",
+    "jax[cuda]>=0.7.2",
+]
+# Gaussian splat rendering. Only the vision experiments need it, and splax rasterizes with CUDA
+# kernels only, so it is kept out of the environments that have to run on CPU.
+vision = [
+    "crazyflow[splats] @ git+https://github.com/learnsyslab/crazyflow.git@d28ec70", # pinned to what is essentially 0.4
+    "splax>=0.2.2",
+    "pycolmap==4.1.1", # must match the COLMAP build
+    "dm-pix", # used for structural splat loss
+    "wandb",
+    "opencv-python", 
+    "imageio[ffmpeg]",
+    "pygame"
+]
+
+[tool.pixi.workspace]
+channels = ["conda-forge", "https://prefix.dev/conda-forge"]
+platforms = [
+    "linux-64",
+    "linux-aarch64",
+    { name = "linux-64-cuda12", platform = "linux-64", cuda = "12" },
+    { name = "linux-64-cuda121", platform = "linux-64", cuda = "12.1" },
+]
+
+[tool.pixi.dependencies]
+python = "*"
+setuptools = "*"
+packaging = "<26" # For cflib
+ruff = "*"
+# Every environment runs the same suite, see [tool.pixi.tasks]. Left open because
+# gym-pybullet-drones requires pytest>=9, and a global pin keeps every environment solvable.
+pytest = ">=7.3"
+polars = "<2" # The benchmark tests read results with it, so every environment must collect it
+
+# No single environment can hold every feature, since aerial-gym pins Python 3.8 and vision builds
+# for a different CUDA platform. The suite skips whatever the active environment cannot import, so
+# `test` is meaningful everywhere and `test-all` fans the same suite out across all environments.
+[tool.pixi.tasks]
+# Must run before `pixi install`, since solving the aerial-gym environment needs the isaacgym path
+setup-isaacgym = "tools/setup_isaacgym.sh"
+test = "pytest"
+test-all = { depends-on = [
+    { task = "test", environment = "figure8" },
+    { task = "test", environment = "learn2fly" },
+    { task = "test", environment = "throw" },
+    { task = "test", environment = "racing" },
+    { task = "test", environment = "mppi" },
+    { task = "test", environment = "sim2real" },
+    { task = "test", environment = "crazyflow" },
+    { task = "test", environment = "l2f" },
+    { task = "test", environment = "flightmare" },
+    { task = "test", environment = "diff-aero" },
+    { task = "test", environment = "pybullet" },
+    { task = "test", environment = "vision" },
+    { task = "test", environment = "aerial-gym" },
+] }
+
+[tool.pixi.pypi-options]
+prerelease-mode = "allow"  # Allow all pre-release versions
+# cfclient pins PyQt6 below 6.8, but the Qt bundled with the wheels has to follow the minor version of
+# qt6-main from ROS: the ROS setup puts the conda libraries on LD_LIBRARY_PATH, where they shadow the
+# wheel's, and Qt's platform plugin only loads against libraries of its own minor version.
+dependency-overrides = { pyqt6 = ">=6.9,<6.10", pyqt6-qt6 = ">=6.9,<6.10" }
+
+[tool.pixi.target.linux.dependencies]
+libgl-devel = "*"
+
+# The pip CUDA wheels do not run on the Jetson GPU and the flight scripts only need JAX on the CPU
+[tool.pixi.target.linux-aarch64.activation.env]
+JAX_PLATFORMS = "cpu"
+
+[tool.pixi.environments]
+# CPU-only environments pin linux-64 so they are not solved for the CUDA platforms as well
+default = { platforms = ["linux-64"] }
+crazyflow = { features = ["crazyflow"], platforms = ["linux-64"] }
+aerial-gym = { features = ["aerial-gym"] }
+diff-aero = { features = ["diff-aero"] }
+pybullet = { features = ["pybullet", "crazyflow"], platforms = ["linux-64"] }
+sim2real = { features = ["kilted", "crazyflow", "deploy"], platforms = ["linux-64", "linux-aarch64"] }
+sysid = { features = ["kilted", "crazyflow", "deploy", "sysid"], platforms = ["linux-64", "linux-aarch64"] }
+racing = { features = ["kilted", "crazyflow", "deploy", "racing"], platforms = ["linux-64"] }
+mppi = { features = ["kilted", "crazyflow", "deploy", "mppi"], platforms = ["linux-64"] }
+# The RL experiments share one feature set, named after the experiment they run
+figure8 = { features = ["kilted", "crazyflow", "deploy", "rl"]}
+learn2fly = { features = ["kilted", "crazyflow", "deploy", "rl"]}
+throw = { features = ["kilted", "crazyflow", "deploy", "rl"]}
+vision = { features = ["kilted", "crazyflow", "deploy", "vision"] }
+l2f = { features = ["l2f", "crazyflow"], platforms = ["linux-64"] }
+flightmare = { features = ["flightmare", "crazyflow"], platforms = ["linux-64"] }
+
+# Crazyflow feature
+[tool.pixi.feature.crazyflow]
+[tool.pixi.feature.crazyflow.dependencies]
+python = "<3.14" # MuJoCo has no wheels for Python 3.14
+h5py = ">=3.16.0,<4"
+[tool.pixi.feature.crazyflow.pypi-dependencies]
+crazyflow_experiments = { path = ".", editable = true }
+
+# sysid feature
+[tool.pixi.feature.sysid.dependencies]
+pandas = ">=2.0"  # lol_sysid.py reads the identification logs with it
+pyulog = "*"  # data_converter_px4.py reads the identification logs with it
+
+[tool.pixi.feature.racing]
+[tool.pixi.feature.racing.pypi-dependencies]
+lsy_drone_racing = { git = "https://github.com/learnsyslab/lsy_drone_racing.git", rev = "54e64cf" , extras = ["deploy"]}
+
+# Gaussian splat rendering feature
+[tool.pixi.feature.vision]
+platforms = ["linux-64-cuda12"] # splax rasterizes with CUDA kernels only
+# Build dependencies for tools/build_colmap.sh, which compiles COLMAP with CASPAR
+[tool.pixi.feature.vision.dependencies]
+cmake = "*"
+ninja = "*"
+pkg-config = "*"
+git = "*"
+c-compiler = "*"
+cxx-compiler = "*"
+cuda-nvcc = ">=12.8,<13" # 12.8 is the first release that targets sm_120
+cuda-cudart-dev = "*"
+libcurand-dev = "*"
+libboost-devel = "*"
+eigen = "*"
+eigen-abi-devel = "*"
+ceres-solver = "*"
+libopenblas = { version = "*", build = "openmp_*" }  # Prevent OpenBLAS warnings
+suitesparse = "*"
+metis = "*"
+glog = "*"
+gflags = "*"
+openimageio = "*"
+glew = "*"
+sqlite = "*"
+[tool.pixi.feature.vision.tasks]
+# Must run before the first reconstruction to build COLMAP with CASPAR
+colmap-build = "tools/build_colmap.sh"
+
+# aerial-gym feature
+[tool.pixi.feature.aerial-gym]
+platforms = ["linux-64-cuda121"]
+[tool.pixi.feature.aerial-gym.dependencies]
+python = "==3.8" # Aerial-gym only works with Python 3.8
+pytorch = "==1.13.1"
+torchvision = "==0.14.1"
+numpy = "==1.23.0"
+pytorch-gpu = "*"
+fvcore = "*"
+iopath = "*"
+polars = ">=1.5.0,<2"
+fire = ">=0.7.0,<0.8"
+[tool.pixi.feature.aerial-gym.pypi-dependencies]
+crazyflow_experiments = { path = ".", editable = true }
+torchaudio = "*"
+pytorch3d = "*"
+warp-lang = "==1.0.0"  # Required by aerial-gym
+isaacgym = { path = "submodules/isaacgym/python", editable = true }  # Fetched by tools/setup_isaacgym.sh
+urdfpy = { git="https://github.com/mmatl/urdfpy", rev="5466842" }
+aerial-gym = { path = "submodules/aerial_gym_simulator", editable = true }
+[tool.pixi.feature.aerial-gym.activation.env]
+LD_LIBRARY_PATH = "$PIXI_PROJECT_ROOT/.pixi/envs/aerial-gym/lib"
+
+# diff-aero feature
+[tool.pixi.feature.diff-aero]
+platforms = ["linux-64-cuda121"]
+[tool.pixi.feature.diff-aero.dependencies]
+python = ">=3.10,<3.12"  # Requires open3d, which only has wheels for Python up to 3.11
+pytorch = ">=2.0"
+polars = ">=1.35.1,<2"
+torchvision = ">=0.24.0,<0.25"
+omegaconf = ">=2.3.0,<3"
+pytorch-gpu = "*"
+pytorch3d = ">=0.7.9,<0.8"
+tensordict = ">=0.11.0,<0.12"
+hydra-core = ">=1.3.2,<2"
+tensorboard = ">=2.20.0,<3"
+line_profiler = ">=5.0.2,<6"
+opencv = ">=4.13.0,<5"
+imageio = ">=2.37.0,<3"
+open3d = ">=0.19.0,<0.20"
+onnxruntime = ">=1.24.2,<2"
+einops = ">=0.8.2,<0.9"
+fire = ">=0.7.1,<0.8"
+[tool.pixi.feature.diff-aero.pypi-dependencies]
+taichi = "==1.7.4"
+crazyflow_experiments = { path = ".", editable = true }
+
+# gym-pybullet-drones feature
+[tool.pixi.feature.pybullet]
+[tool.pixi.feature.pybullet.dependencies]
+numpy = "*"
+polars = ">=1.35.1,<2"
+fire = ">=0.7.1,<0.8"
+toml = "*"
+tqdm = "*"
+[tool.pixi.feature.pybullet.pypi-dependencies]
+gym-pybullet-drones = { path = "submodules/gym-pybullet-drones", editable = true } # , rev = "310e45a" 
+crazyflow_experiments = { path = ".", editable = true }
+
+# l2f feature
+[tool.pixi.feature.l2f]
+[tool.pixi.feature.l2f.dependencies]
+python = ">=3.9"
+polars = ">=1.35.0,<2"
+fire = ">=0.7.1,<0.8"
+numpy = "*"
+gcc = "*"  # for building the l2f extension
+gxx = "*"  # for building the l2f extension
+[tool.pixi.feature.l2f.pypi-dependencies]
+crazyflow_experiments = { path = ".", editable = true }
+l2f = ">=2.0.18"
+
+# Flightmare feature
+[tool.pixi.feature.flightmare]
+[tool.pixi.feature.flightmare.activation] # install scripts
+scripts = ["tools/setup_flightmare.sh"]
+[tool.pixi.feature.flightmare.dependencies]
+# Flightmare toolchain is outdated. Pinned versions are necessary to avoid build or runtime errors
+python = "==3.11"  # the newest version pybind11 2.10 supports
+# flightlib uses -Ofast, which allows NaN guards to be skipped. GCC 13 began doing so, which
+# silently rejects every command and freezes the simulation, so GCC MUST be lower
+gcc = "8.5.*"  # closest available to original
+gxx = "8.5.*"
+cmake = "<4"
+make = "*"
+git = "*"  # flightlib downloads googletest, pybind11, yaml-cpp and Eigen at configure time
+libopencv = "4.*"  # flightlib includes the OpenCV C API headers, dropped in OpenCV 5
+zeromq = "*"
+zmqpp = "*"
+polars = ">=1.35.0,<2"
+fire = ">=0.7.1,<0.8"
+numpy = "*"
+pyyaml = "*"
+pyzmq = "*"  # required to communicate with Unity. Flightmare does not expose render bindings
+curl = "*"  # Unity download
+xz = "*"  # Unity extraction
+[tool.pixi.feature.flightmare.pypi-dependencies]
+crazyflow_experiments = { path = ".", editable = true }
+
+# ROS kilted feature
+[tool.pixi.feature.kilted]
+channels = ["https://prefix.dev/robostack-kilted"]
+[tool.pixi.feature.kilted.activation] # install scripts
+scripts = ["tools/setup_mocap.sh", "tools/setup_mavros_msgs.sh", "tools/setup_acados.sh"]
+# acados neither builds nor generates code on aarch64 without extra work, so the companion computers
+# of the PX4 vehicles do without it. They do build the motion capture tracking, which publishes the
+# pose to the MAVROS running next to it.
+[tool.pixi.feature.kilted.target.linux-aarch64.activation]
+scripts = ["tools/setup_mocap.sh", "tools/setup_mavros_msgs.sh"]
+[tool.pixi.feature.kilted.dependencies]
+python = ">=3.10"
+pip = "*"
+uv = "*"
+ros-kilted-desktop = "*"
+ros-kilted-geographic-msgs = "*" # mavros_msgs, built by tools/setup_mavros_msgs.sh, needs it
+ros2-distro-mutex = "0.12.*"  # Pinned for motion_capture_tracking
+cmake = "==3.26.0"  # Pinned for motion_capture_tracking
+make = "==4.4.1"  # Pinned for motion_capture_tracking
+compilers = ">=1.9.0, <1.11.0" # Pinned for motion_capture_tracking
+libboost = "==1.86.0" # Pinned for motion_capture_tracking
+colcon-common-extensions = "*"
+rosdep = "*"
+pkg-config = "*"
+ninja = "*"
+rosbags = ">=0.10.9,<0.11"
+openblas = "*"
+[tool.pixi.feature.kilted.pypi-dependencies]
+drone-estimators = { path = "submodules/drone-estimators", editable = true }
+cflib = "*"
+# The Crazyflie GUI, for the lab machines. Its PyQt6 has no aarch64 wheels at the Qt version of ROS.
+[tool.pixi.feature.kilted.target.linux-64.pypi-dependencies]
+cfclient = ">2022"
+
+# rl feature
+[tool.pixi.feature.rl]
+platforms = ["linux-64-cuda121"]
+[tool.pixi.feature.rl.pypi-dependencies]
+wandb = "*"
+[tool.setuptools.packages.find]
+include = ["crazyflow_experiments*"]
+exclude = ["submodules*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# The ROS launch test plugins import every test module during collection to look for a launch
+# description and abort the session on module skips. We use module skips for the test suite, so we
+# have to disable the plugins
+addopts = "-p no:launch_testing -p no:launch_ros"
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".git",
+    ".git-rewrite",
+    ".ipynb_checkpoints",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "build",
+    "dist",
+    "site-packages",
+    "venv",
+    "docs/conf.py",
+]
+
+line-length = 100
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "D", "TCH", "ANN"]
+ignore = ["ANN401", "D106"]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"benchmark/*" = ["D100", "D103"]
+"experiments/benchmark/*" = ["D"]
+"tests/*" = ["D100", "D103", "D104"]
+"examples/*" = ["D100", "D103"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-annotations]
+suppress-dummy-args = true
+suppress-none-returning = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = true
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"

@@ -1,0 +1,112 @@
+# diff-aero config for single agent position control.
+name = "position_control"
+obs_frame = "local"
+max_time = 20.0
+wait_before_truncate = 5.0
+max_target_vel = 10.0
+min_target_vel = 5.0
+last_action_in_obs = false
+
+[length]
+default = 10
+enabled = true
+min = 10
+max = 10
+
+[randomizer]
+enabled = true
+
+[dynamics]
+name = "quadrotor"
+alpha = 1.0
+g = 9.81
+solver_type = "euler"
+max_w_xy = 5.0  # Max angular velocity
+max_w_z = 1.0 
+max_T = 4.179
+min_T = 0
+lmbda = 0.1     # acc exp smoothing
+
+[dynamics.m]
+default = 0.15
+min = 0.1
+max = 0.2
+enabled = true
+
+[dynamics.c_tau]
+default = 0.0133
+min = 0.01
+max = 0.0166
+enabled = true
+
+[dynamics.J.xy]
+default = 0.01
+min = 0.008
+max = 0.012
+enabled = true
+
+[dynamics.J.z]
+default = 0.02
+min = 0.015
+max = 0.025
+enabled = true
+
+[dynamics.D.xy]
+default = 0.6
+min = 0.5
+max = 0.7
+enabled = true
+
+[dynamics.D.z]
+default = 0.6
+min = 0.5
+max = 0.7
+enabled = true
+
+[dynamics.arm_l]
+default = 0.15
+min = 0.1
+max = 0.2
+enabled = true
+
+[dynamics.controller]
+thrust_ratio = 1.0
+torque_ratio = 1.0
+min_normed_thrust = 0.0
+min_normed_torque = [0.0, 0.0, 0.0]
+max_normed_thrust = 1.0
+max_normed_torque = [1.0, 1.0, 1.0]
+K_angvel = 0.1
+min_roll_rate = -500.0
+min_pitch_rate = -500.0
+min_yaw_rate = -500.0
+max_roll_rate = 500.0
+max_pitch_rate = 500.0
+max_yaw_rate = 500.0
+
+[imu]
+imu_mounting_error_range_deg = 2.0
+acc_drift_std = 0.13564659966250536
+acc_noise_std = 0.15690639999999998
+gyro_drift_std = 0.0014352700094407325
+gyro_noise_std = 0.02443460952792061
+enable_drift = true
+enable_noise = true
+
+[loss_weights]
+[loss_weights.quadrotor]
+vel = 1.0
+jerk = 0.001
+pos = 3.0
+attitude = 0.1
+
+[reward_weights]
+constant = 1.0
+[reward_weights.quadrotor]
+vel = 1.0
+jerk = 0.001
+pos = 3.0
+attitude = 0.1
+
+[render]
+headless = true

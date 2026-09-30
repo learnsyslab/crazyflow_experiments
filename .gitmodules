@@ -1,0 +1,20 @@
+[submodule "submodules/aerial_gym_simulator"]
+	path = submodules/aerial_gym_simulator
+	url = https://github.com/ntnu-arl/aerial_gym_simulator.git
+[submodule "submodules/diffaero"]
+	path = submodules/diffaero
+	url = https://github.com/flyingbitac/diffaero.git
+[submodule "submodules/drone-estimators"]
+	path = submodules/drone-estimators
+	url = https://github.com/utiasDSL/drone-estimators.git
+[submodule "submodules/gym-pybullet-drones"]
+	path = submodules/gym-pybullet-drones
+	url = https://github.com/utiasDSL/gym-pybullet-drones.git
+[submodule "submodules/flightmare"]
+	path = submodules/flightmare
+	url = https://github.com/uzh-rpg/flightmare.git
+	ignore = dirty  # Activation patches the build files and compiles flightlib in place
+[submodule "submodules/crazyflie-firmware"]
+	path = submodules/crazyflie-firmware
+	url = https://github.com/bitcraze/crazyflie-firmware.git
+	ignore = dirty  # crazyflie-firmware builds in place, so the working tree is always dirty

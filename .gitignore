@@ -1,0 +1,35 @@
+
+# pixi environments and the sources pixi tasks build
+.pixi
+.pixi-src
+
+*.egg-info
+.vscode
+**/__pycache__/
+**/*.pyc
+**/.cache
+/.pytest_cache/
+/log/
+
+# Experiment outputs
+/results/
+/plots/
+/figures/
+/saves/
+/wandb/
+/recordings/
+
+/ros_ws/
+/ros2_ws/
+/submodules/isaacgym
+.claude
+
+# texlive
+/texlive/
+
+# acados
+/acados/
+/c_generated_code/
+imgui.ini
+
+.worktrees

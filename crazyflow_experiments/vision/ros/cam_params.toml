@@ -1,0 +1,37 @@
+# Selected model: SIMPLE_RADIAL, OPENCV, or FULL_OPENCV.
+model = "OPENCV"
+
+[calibration]
+width = 960
+height = 720
+
+[models.SIMPLE_RADIAL]
+f = 319.466
+cx = 480.0
+cy = 360.0
+k = -0.06496
+
+[models.OPENCV]
+fx = 346.39
+fy = 339.23
+cx = 480.0
+cy = 360.0
+k1 = 0.0530
+k2 = -0.0450
+p1 = -0.0026
+p2 = -0.0022
+
+[models.FULL_OPENCV]
+fx = 285.44
+fy = 270.52
+cx = 480.0
+cy = 360.0
+k1 = 0.197
+k2 = -0.270
+# These coefficients were not present in the supplied results.
+p1 = 0.0
+p2 = 0.0
+k3 = 0.0
+k4 = 0.0
+k5 = 0.0
+k6 = 0.0

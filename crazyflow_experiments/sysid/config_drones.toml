@@ -1,0 +1,57 @@
+# Physical parameters of every drone model, one table per model, selected by `model` in the `[drone]`
+# section of the sysid and sim2real configs. The parameters of a table: the mass in kg, the range of
+# the thrust command (PX4 takes a normalized command in [0, 1], Crazyflies a 16 bit pwm), the thrust
+# of one motor in N over the normalized command p = pwm / pwm_max, thrust = a p^2 + b p + c, and the
+# limits of the thrust of one motor in N. The Crazyflie values are those of crazyflow's params.toml,
+# their thrust is linear in the pwm. The PX4 curves come from the thrust stand, see
+# fit_thrust_to_thrust.py, thrust_max is the curve at full command and thrust_min stays well above the
+# command where the fitted curve crosses zero, both are clipped to before the curve is inverted. The
+# racer values are placeholders until its thrust stand measurement.
+
+[cf2x_L250]
+mass = 0.0328
+pwm_min = 7000
+pwm_max = 65535
+thrust_curve = [0.0, 0.12, 0.0]
+thrust_min = 0.01282
+thrust_max = 0.12
+
+[cf2x_P250]
+mass = 0.0318
+pwm_min = 7000
+pwm_max = 65535
+thrust_curve = [0.0, 0.12, 0.0]
+thrust_min = 0.01282
+thrust_max = 0.12
+
+[cf2x_T350]
+mass = 0.0379
+pwm_min = 7000
+pwm_max = 65535
+thrust_curve = [0.0, 0.18, 0.0]
+thrust_min = 0.01923
+thrust_max = 0.18
+
+[cf21B_500]
+mass = 0.0434
+pwm_min = 7000
+pwm_max = 65535
+thrust_curve = [0.0, 0.2, 0.0]
+thrust_min = 0.02136
+thrust_max = 0.2
+
+[racer]
+mass = 0.7 # TODO Ahi
+pwm_min = 0.0
+pwm_max = 1.0
+thrust_curve = [0.0, 12.1, 0.0] # TODO Ahi, placeholder that covers the limits below
+thrust_min = 1.0 # TODO Ahi
+thrust_max = 12.1 # TODO Ahi
+
+[hb_x500]
+mass = 2.28
+pwm_min = 0.0
+pwm_max = 1.0
+thrust_curve = [-1.5248, 14.0907, -0.4280]
+thrust_min = 1.0 # N, command 0.10
+thrust_max = 12.13 # N, command 1.0

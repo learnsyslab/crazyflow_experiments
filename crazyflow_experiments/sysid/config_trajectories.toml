@@ -1,0 +1,75 @@
+# Trajectory sets of the identification flights, named by `trajectories` in the experiment section
+# of config.toml.
+# Each entry takes the keys of control.config.build_trajectory except the origin: trajectory, n_runs,
+# time (s per cycle), scaling (m along the trajectory's own axes), axes (the world axes its own x, y, z
+# are placed on) and optionally yaw_mode and yaw_setting. The "_thrust" sets are faster, for drones
+# with more thrust. Every set ends with a trajectory of zero size, a hover at the origin, so the
+# recording ends with a hover like it begins with the one of the takeoff.
+[trajectory_sets]
+# Low-level identification with lol_sysid.py: chirps along z, x and y, then a yaw chirp while hovering
+lol_sysid = [
+    { trajectory = "chirp_1d", n_runs = 3, time = 10.0, scaling = [5.5, 3.5, 1.5], axes = "zyx" },
+    { trajectory = "chirp_1d", n_runs = 3, time = 10.0, scaling = [1.0, 1.0, 0.0], axes = "xyz" },
+    { trajectory = "chirp_1d", n_runs = 3, time = 10.0, scaling = [1.0, 1.0, 0.0], axes = "yxz" },
+    { trajectory = "chirp_1d", n_runs = 3, time = 10.0, scaling = [0.0, 0.0, 0.0], axes = "xyz", yaw_mode = "chirp", yaw_setting = 1.0 },
+]
+sysid_train = [
+    { trajectory = "lissajous", n_runs = 1, time = 30.0, scaling = [3.5, 3.5, 2.0], axes = "xyz" },
+    { trajectory = "lissajous", n_runs = 1, time = 20.0, scaling = [3.5, 3.5, 2.0], axes = "xyz" },
+    { trajectory = "melon", n_runs = 12, time = 4.5, scaling = [3.5, 3.5, 2.0], axes = "xyz" },
+    { trajectory = "melon", n_runs = 12, time = 4.5, scaling = [3.5, 3.5, 2.0], axes = "yxz" },
+    { trajectory = "flower1", n_runs = 1, time = 10.0, scaling = [3.0, 3.0, 2.0], axes = "xyz" },
+    { trajectory = "flower1", n_runs = 1, time = 14.0, scaling = [3.0, 3.0, 2.0], axes = "xyz" },
+    { trajectory = "flower1", n_runs = 1, time = 14.0, scaling = [3.0, 3.0, 2.0], axes = "yxz" },
+    { trajectory = "flower1", n_runs = 1, time = 10.0, scaling = [3.0, 3.0, 2.0], axes = "yxz" },
+    { trajectory = "ellipse", n_runs = 1, time = 1.0, scaling = [0.0, 0.0, 0.0], axes = "xyz" },
+]
+sysid_train_thrust = [
+    { trajectory = "lissajous", n_runs = 1, time = 30.0, scaling = [3.5, 3.5, 2.0], axes = "xyz" },
+    { trajectory = "lissajous", n_runs = 1, time = 17.5, scaling = [3.5, 3.5, 2.0], axes = "xyz" },
+    { trajectory = "melon", n_runs = 12, time = 5.5, scaling = [3.5, 3.5, 2.0], axes = "xyz" },
+    { trajectory = "melon", n_runs = 12, time = 3.5, scaling = [3.5, 3.0, 2.0], axes = "xyz" },
+    { trajectory = "melon", n_runs = 12, time = 4.0, scaling = [3.5, 3.5, 2.0], axes = "yxz" },
+    { trajectory = "melon", n_runs = 12, time = 6.0, scaling = [3.5, 3.5, 2.0], axes = "yxz" },
+    { trajectory = "flower1", n_runs = 1, time = 8.0, scaling = [3.0, 3.0, 2.0], axes = "xyz" },
+    { trajectory = "flower1", n_runs = 1, time = 14.0, scaling = [3.0, 3.0, 2.0], axes = "xyz" },
+    { trajectory = "flower1", n_runs = 1, time = 14.0, scaling = [3.0, 3.0, 2.0], axes = "yxz" },
+    { trajectory = "flower1", n_runs = 1, time = 8.0, scaling = [3.0, 3.0, 2.0], axes = "yxz" },
+    { trajectory = "ellipse", n_runs = 1, time = 1.0, scaling = [0.0, 0.0, 0.0], axes = "xyz" },
+]
+sysid_valid = [
+    { trajectory = "figure8", n_runs = 1, time = 12.0, scaling = [5.5, 3.5, 2.0], axes = "xyz" },
+    { trajectory = "figure8", n_runs = 1, time = 9.0, scaling = [5.5, 3.5, 2.0], axes = "xyz" },
+    { trajectory = "figure8", n_runs = 1, time = 8.0, scaling = [5.5, 3.5, 2.0], axes = "xyz" },
+    { trajectory = "figure8", n_runs = 1, time = 7.5, scaling = [5.5, 3.5, 2.0], axes = "xyz" },
+    { trajectory = "figure8", n_runs = 1, time = 10.5, scaling = [5.5, 3.5, 2.0], axes = "yxz" },
+    { trajectory = "figure8", n_runs = 1, time = 11.0, scaling = [5.5, 3.5, 2.0], axes = "yxz" },
+    { trajectory = "figure8", n_runs = 1, time = 12.0, scaling = [5.5, 3.5, 2.0], axes = "yxz" },
+    { trajectory = "figure8", n_runs = 1, time = 14.0, scaling = [5.5, 3.5, 2.0], axes = "yxz" },
+    { trajectory = "figure8", n_runs = 1, time = 18.0, scaling = [5.5, 3.5, 2.0], axes = "yxz" },
+    { trajectory = "figure8", n_runs = 1, time = 21.0, scaling = [5.5, 3.5, 2.0], axes = "yxz" },
+    { trajectory = "spiral", n_runs = 6, time = 5.0, scaling = [3.0, 3.0, 0.0], axes = "xyz" },
+    { trajectory = "spiral", n_runs = 6, time = 3.0, scaling = [3.0, 3.0, 0.0], axes = "xyz" },
+    { trajectory = "spiral", n_runs = 6, time = 3.0, scaling = [3.0, 3.0, 0.0], axes = "yxz" },
+    { trajectory = "spiral", n_runs = 6, time = 5.0, scaling = [3.0, 3.0, 0.0], axes = "yxz" },
+    { trajectory = "flower2", n_runs = 1, time = 14.0, scaling = [3.5, 3.5, 1.5], axes = "xyz" },
+    { trajectory = "flower2", n_runs = 1, time = 24.0, scaling = [3.5, 3.5, 1.5], axes = "yxz" },
+    { trajectory = "ellipse", n_runs = 1, time = 1.0, scaling = [0.0, 0.0, 0.0], axes = "xyz" },
+]
+sysid_valid_thrust = [
+    { trajectory = "figure8", n_runs = 1, time = 9.5, scaling = [5.5, 3.5, 2.0], axes = "xyz" },
+    { trajectory = "figure8", n_runs = 1, time = 8.0, scaling = [5.5, 3.5, 2.0], axes = "xyz" },
+    { trajectory = "figure8", n_runs = 1, time = 7.0, scaling = [5.5, 3.5, 2.0], axes = "xyz" },
+    { trajectory = "figure8", n_runs = 1, time = 6.0, scaling = [5.5, 3.5, 2.0], axes = "xyz" },
+    { trajectory = "figure8", n_runs = 1, time = 9.0, scaling = [5.5, 3.5, 2.0], axes = "yxz" },
+    { trajectory = "figure8", n_runs = 1, time = 9.5, scaling = [5.5, 3.5, 2.0], axes = "yxz" },
+    { trajectory = "figure8", n_runs = 1, time = 10.0, scaling = [5.5, 3.5, 2.0], axes = "yxz" },
+    { trajectory = "figure8", n_runs = 1, time = 11.0, scaling = [5.5, 3.5, 2.0], axes = "yxz" },
+    { trajectory = "spiral", n_runs = 6, time = 5.0, scaling = [3.0, 3.0, 0.0], axes = "xyz" },
+    { trajectory = "spiral", n_runs = 6, time = 2.5, scaling = [3.0, 3.0, 0.0], axes = "xyz" },
+    { trajectory = "spiral", n_runs = 6, time = 2.5, scaling = [3.0, 3.0, 0.0], axes = "yxz" },
+    { trajectory = "spiral", n_runs = 6, time = 5.0, scaling = [3.0, 3.0, 0.0], axes = "yxz" },
+    { trajectory = "flower2", n_runs = 2, time = 12.0, scaling = [3.0, 3.0, 2.0], axes = "xyz" },
+    { trajectory = "flower2", n_runs = 1, time = 24.0, scaling = [3.0, 3.0, 2.0], axes = "yxz" },
+    { trajectory = "ellipse", n_runs = 1, time = 1.0, scaling = [0.0, 0.0, 0.0], axes = "xyz" },
+]

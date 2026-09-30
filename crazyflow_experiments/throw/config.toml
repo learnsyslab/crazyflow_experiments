@@ -1,0 +1,32 @@
+[drone]
+id = 11
+channel = 80
+model = "cf21B_500" # cf2x_L250, cf2x_P250, cf2x_T350, cf21B_500, custom
+pos_landing = [0.2, 0.2, 0.0] # landing position of the drone in global frame
+pos_update_freq = 20 # Hz, frequency for onboard estimator updates
+
+[controller]
+ctrl_freq = 100 # Hz
+use_x_start = true # use predicted state for training, otherwise randomize
+use_simple_throw_detection = false # detect throw by checking height -> prone to fail but faster
+
+[controller.x_start_randomization] # Noise around x_start, normals cut at their range or bounds
+pos_noise_range = 0.5 # m, of a standard normal
+pos_z_noise_std = 1.0 # m, replaces the z noise, around the predicted height
+pos_z_bounds = [1.2, 2.8] # m, the z noise is cut at these heights
+vel_noise_range = 1.0 # m/s, of a standard normal
+orient_noise_std = 1.5 # rad, of the rotation vector applied in the predicted orientation's frame
+ang_vel_mag_noise_std = 4.0 # rad/s, around the predicted spin magnitude
+ang_vel_mag_max = 10.0 # rad/s, the spin magnitude is cut to [0, max]
+ang_vel_dir_noise_std = 1.0 # rad, of the rotation vector applied to the predicted spin axis
+
+[experiment]
+stabilized_vel_z_tol = 0.1 # m/s, the drone counts as stabilized below this vertical speed
+stabilized_min_time = 1.0 # s after policy takeover, before which it cannot count as stabilized
+flight_bounds_x = [-2.0, 3.0] # m, a throw fails once the drone leaves them
+flight_bounds_y = [-1.5, 1.5] # m
+flight_bounds_z = [0.1, 3.0] # m, floor and ceiling
+ceiling_min_time = 1.0 # s after policy takeover, from which on the ceiling counts as out of bounds
+
+[sim]
+fps = 60

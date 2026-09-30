@@ -1,0 +1,31 @@
+[drone]
+id = 52
+channel = 80
+model = "cf21B_500" 
+mass = 0.065 # kg, with FPV camera and extra battery
+mass_thrust = 80000 # magic number
+pos_landing = [0.2, 0.2, 0.0] # landing position of the drone in global frame
+pos_update_freq = 10 # Hz, frequency for onboard estimator updates
+
+[controller]
+type = "policy_attitude" # gamepad, policy_state, policy_attitude, mellinger_state, mellinger_attitude
+ctrl_freq = 50 # Hz
+
+[experiment]
+deploy_sitl = false # Use splat rendering for SITL
+# Only valid for non-manual modes
+origin = [0.0, 0.0, 0.75] # position in global frame around which the trajectory is centered
+trajectory = "figure8" # type of trajectory, e.g., figure8, ellipse, figure8_bent, melon, ...
+plane = "xy" # plane in which the trajectoy lies, e.g., xy, xz. Ignored for 3d trajectories
+scaling = [2.0, 1.0, 0.0] # maximum size in m of the trajectory, [2.0, 0.0, 1.0], [3.0, 3.0, 0.0]
+time = 10.0 # time per loop of the trajectory
+n_runs = 1 # number of runs
+yaw_mode = "direction" # yaw behavior: constant, velocity, direction
+yaw_setting = 0 # yaw parameter, e.g., for constant: angle in rad, for velocity: rate in rot/T
+soft_start = false # enable/disable soft start
+
+[sim]
+physics = "first_principles"  # physics model of the sim, e.g., first_principles, so_rpy_rotor_drag, pybullet, crazysim 
+render = true # enable/disable rendering
+render_mode = "human" # human for GUI, rgb_array for saved video file
+fps = 60
