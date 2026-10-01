@@ -103,6 +103,7 @@ def main(
         goals: Goals the policy reaches before coming home.
         seed: Seed drawing the goals.
         render: Show the splat viewer.
+        calibrate: Calibrate the drone during takeoff.
     """
     folder = Path(__file__).parent
     config = toml.load(folder / "config.toml")

@@ -380,7 +380,9 @@ class Delay:
     """Attitude commands on their way to the drone, and how long each world holds them back."""
 
     buffer: Array = struct.field(metadata={CORE_NDIM_KEY: 2})  # (N, M, depth + 1, 4), newest last
-    held: Array = struct.field(metadata={CORE_NDIM_KEY: 1})  # (N, M, 4), command of the current tick
+    held: Array = struct.field(
+        metadata={CORE_NDIM_KEY: 1}
+    )  # (N, M, 4), command of the current tick
     steps: Array = struct.field(metadata={CORE_NDIM_KEY: 1})  # (N, M, 1), lag in sim steps
 
 

@@ -226,12 +226,7 @@ def save_recording(
     logger.info(f"Recording saved to {path}")
 
 
-def run(
-    config: dict,
-    record: bool = False,
-    render: bool = True,
-    save: bool = True,
-) -> None:
+def run(config: dict, record: bool = False, render: bool = True, save: bool = True) -> None:
     """Fly one MPPI experiment in simulation."""
     initial_info, trajectory = build_initial_info(config)
     pos_start, yaw_start = TrajectoryConfig.from_config(config).start_pose(trajectory)

@@ -173,7 +173,6 @@ def test_train_ppo_randomized(trained_checkpoint: Callable[[str, str, float], Pa
     metrics = evaluate_ppo_batched(PPOArgs.create("10s"), checkpoint, dr_scale=1.0, num_envs=64)
     assert set(metrics) == {"pos_rmse_mm", "crash_rate", "mean_reward", "mean_steps"}
     assert metrics["crash_rate"] == 0.0, f"policy crashes under randomization: {metrics}"
-    # The pinned training run measures about 32.6 mm; retain a small numerical margin.
     assert metrics["pos_rmse_mm"] < 35.0, f"randomized tracking error too large: {metrics}"
 
 

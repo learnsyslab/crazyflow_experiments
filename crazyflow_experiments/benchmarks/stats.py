@@ -127,8 +127,7 @@ def analyze_annotations(
                 (pl.col("device") == device)
                 & (pl.col("n_drones") == 1)
                 & (pl.col("n_worlds") == n_worlds)
-            )
-            ["timings"][0]
+            )["timings"][0]
             .to_numpy()
             for name, device in ((cf, cf_device), (base, base_device))
         )

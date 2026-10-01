@@ -26,12 +26,12 @@ import flax.struct as struct
 import jax
 import jax.numpy as jp
 import numpy as np
+import wandb
 from crazyflow.dynamics import load_params
 from crazyflow.sim import Dynamics
 from jax import Array
 from scipy.spatial.transform import Rotation as R
 
-import wandb
 from crazyflow_experiments.core.agents.bptt_agent_deterministic import Agent
 from crazyflow_experiments.core.envs.throw_env import ThrowEnv
 from crazyflow_experiments.core.envs.wrappers import (

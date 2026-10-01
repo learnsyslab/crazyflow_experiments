@@ -42,6 +42,7 @@ def csv2dict(filepath: Path) -> dict[str, NDArray]:
 
 
 def dict2csv(data: dict, filepath: Path):
+    """Write one- or two-dimensional data arrays to a CSV file."""
     header = []
     rawdata = []
     for key, value in data.items():

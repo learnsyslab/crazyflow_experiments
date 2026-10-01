@@ -25,10 +25,13 @@ from sensor_msgs.msg import Image
 
 
 class CameraViewer(Node):
+    """Receive camera frames and display them or retain the latest RGB image."""
+
     WINDOW_NAME = "Magewell HDZero"
     STATS_INTERVAL = 2.0
 
     def __init__(self, headless: bool = False):
+        """Subscribe to camera frames with an optional display window."""
         super().__init__("camera_viewer")
         self.headless = headless
 
@@ -104,7 +107,7 @@ class CameraViewer(Node):
                 return None
             return self._latest_image.copy()
 
-    def _take_latest_image(self, timeout):
+    def _take_latest_image(self, timeout: float) -> Optional[Image]:
         if not self._image_ready.wait(timeout):
             return None
 
@@ -147,7 +150,8 @@ class CameraViewer(Node):
 
         return frame
 
-    def display_once(self, timeout=0.1):
+    def display_once(self, timeout: float = 0.1) -> bool:
+        """Display the newest frame and return whether the viewer should continue."""
         msg = self._take_latest_image(timeout)
         display_start = time.perf_counter()
 
@@ -214,11 +218,13 @@ class CameraViewer(Node):
         self._last_mailbox_overwrites = mailbox_overwrites
 
     def stop(self):
+        """Close the display window when one was opened."""
         if not self.headless:
             cv2.destroyAllWindows()
 
 
 def main(headless: bool = False):
+    """Run the camera subscriber until the viewer or ROS stops."""
     rclpy.init()
     node = CameraViewer(headless=headless)
     spin_thread = None

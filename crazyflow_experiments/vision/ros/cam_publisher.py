@@ -32,9 +32,12 @@ from sensor_msgs.msg import Image
 
 
 class CaptureCardNode(Node):
+    """Publish the latest capture-card image to the drone camera ROS topic."""
+
     STATS_INTERVAL = 2.0
 
     def __init__(self, publish_distorted: bool = False):
+        """Open the capture card and optionally undistort frames before publishing."""
         super().__init__("capture_card")
 
         folder = Path(__file__).parent.parent
@@ -364,7 +367,7 @@ class CaptureCardNode(Node):
 
         self._report_stats(now)
 
-    def _report_stats(self, now):
+    def _report_stats(self, now: float):
         elapsed = now - self._last_stats_time
         if elapsed < self.STATS_INTERVAL:
             return
@@ -410,6 +413,7 @@ class CaptureCardNode(Node):
     # ----------------------------------------------------------------------
 
     def stop(self):
+        """Stop capture and release the video device."""
         self._stop_event.set()
 
         # Usually cap.read() returns every ~16.7 ms at 60 fps, so the thread
@@ -420,6 +424,7 @@ class CaptureCardNode(Node):
 
 
 def main(publish_distorted: bool = False):
+    """Run the capture-card publisher until ROS shuts down."""
     rclpy.init()
 
     node = CaptureCardNode(publish_distorted=publish_distorted)
