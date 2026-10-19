@@ -7,15 +7,15 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING, Callable
 
-import numpy as np
 import pytest
-import toml
 
 from tests.conftest import PACKAGE_ROOT, REPO_ROOT, module_requires_env
 
 module_requires_env("figure8")
 
 import jax.numpy as jp  # noqa: E402
+import numpy as np  # noqa: E402
+import toml  # noqa: E402
 
 from crazyflow_experiments.core.envs import domain_randomization as dr  # noqa: E402
 from crazyflow_experiments.core.envs.figure8_env import FigureEightEnv  # noqa: E402

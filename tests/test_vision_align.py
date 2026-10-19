@@ -4,13 +4,12 @@ import os
 
 os.environ["SCIPY_ARRAY_API"] = "1"  # Must be set before anything imports scipy
 
-import numpy as np  # noqa: E402
-
 from tests.conftest import module_requires_env  # noqa: E402
 
 module_requires_env("vision")
 
 import jax.numpy as jnp  # noqa: E402
+import numpy as np  # noqa: E402
 import splax  # noqa: E402
 from scipy.spatial.transform import Rotation as R  # noqa: E402
 

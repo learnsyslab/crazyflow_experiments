@@ -8,11 +8,12 @@ import sys
 from typing import TYPE_CHECKING
 
 import pytest
-import toml
 
 from tests.conftest import PACKAGE_ROOT, REPO_ROOT, module_requires_env
 
 module_requires_env("learn2fly")
+
+import toml  # noqa: E402
 
 from crazyflow_experiments.core.agents.td3_agent import load_actor  # noqa: E402
 from crazyflow_experiments.core.envs.wrappers import RecordData  # noqa: E402

@@ -7,13 +7,12 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-import jax
-import numpy as np
-
 from tests.conftest import REPO_ROOT, module_requires_env
-from tests.throw_fixtures import write_recording
 
 module_requires_env("throw")
+
+import jax  # noqa: E402
+import numpy as np  # noqa: E402
 
 from crazyflow_experiments.throw.collect import make_deploy_evaluation  # noqa: E402
 from crazyflow_experiments.throw.train import (  # noqa: E402
@@ -21,6 +20,7 @@ from crazyflow_experiments.throw.train import (  # noqa: E402
     load_agent,
     make_jitted_envs,
 )
+from tests.throw_fixtures import write_recording  # noqa: E402
 
 if TYPE_CHECKING:
     from pathlib import Path
