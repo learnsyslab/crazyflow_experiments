@@ -54,8 +54,14 @@ if [ ! -e "${SITE_PACKAGES}"/flightgym*.so ]; then
   # Conda scopes OpenCV to its own subdirectory, so the environment root is added back explicitly.
   cmake -S "${FLIGHTMARE_DIR}/flightlib" -B "${BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_FLAGS="-I${CONDA_PREFIX}/include" \
-    -DEIGEN_FROM_SYSTTEM=OFF -DPYTHON_EXECUTABLE="$(which python)" > "${BUILD_DIR}/cmake.log" 2>&1
-  cmake --build "${BUILD_DIR}" -j "$(nproc)" > "${BUILD_DIR}/build.log" 2>&1
+    -DEIGEN_FROM_SYSTTEM=OFF -DPYTHON_EXECUTABLE="$(which python)" > "${BUILD_DIR}/cmake.log" 2>&1 || {
+    echo "[Setup Flightmare] ERROR: cmake configure failed, see ${BUILD_DIR}/cmake.log" >&2
+    exit 1
+  }
+  cmake --build "${BUILD_DIR}" -j "$(nproc)" > "${BUILD_DIR}/build.log" 2>&1 || {
+    echo "[Setup Flightmare] ERROR: flightlib build failed, see ${BUILD_DIR}/build.log" >&2
+    exit 1
+  }
   # -Ofast silently breaks flightlib on new compilers. The test suite covers this, so we run it once
   # to make sure everything is working.
   echo "[Setup Flightmare] Verifying the build against the flightlib test suite..."

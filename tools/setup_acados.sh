@@ -46,7 +46,7 @@ ACADOS_DIR="${PIXI_PROJECT_ROOT}/acados"
   if [ ! -f ${ACADOS_DIR}/bin/t_renderer ]; then
     echo "[Setup Acados] Downloading tera_renderer..."
     mkdir -p ${ACADOS_DIR}/bin
-    curl -L https://github.com/acados/tera_renderer/releases/download/v0.0.34/t_renderer-v0.0.34-linux \
+    curl -fL --retry 3 https://github.com/acados/tera_renderer/releases/download/v0.0.34/t_renderer-v0.0.34-linux \
       -o ${ACADOS_DIR}/bin/t_renderer
     chmod +x ${ACADOS_DIR}/bin/t_renderer
   fi
