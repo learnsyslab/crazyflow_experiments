@@ -15,16 +15,42 @@ fi
 
 ACADOS_DIR="${PIXI_PROJECT_ROOT}/acados"
 
-# Clone acados
-if [ ! -d ${ACADOS_DIR}/.git ]; then
-  echo "[Setup Acados] Cloning acados..."
-  git clone https://github.com/acados/acados.git ${ACADOS_DIR}
-  (
-    cd ${ACADOS_DIR}
-    git checkout tags/v0.5.1
-    git submodule update --recursive --init
-  )
-fi
+# Pixi can activate environments in parallel (e.g. when installing all envs). This executes the
+# setup scripts concurrently. We lock builds to avoid races.
+(
+  flock 9
+
+  # Clone acados
+  if [ ! -d ${ACADOS_DIR}/.git ]; then
+    echo "[Setup Acados] Cloning acados..."
+    git clone https://github.com/acados/acados.git ${ACADOS_DIR}
+    (
+      cd ${ACADOS_DIR}
+      git checkout tags/v0.5.1
+      git submodule update --recursive --init
+    )
+  fi
+
+  # Build Acados
+  if [ ! -f ${ACADOS_DIR}/lib/libacados.so ]; then
+    echo "[Setup Acados] Building acados..."
+    mkdir -p ${ACADOS_DIR}/build
+    (
+      cd ${ACADOS_DIR}/build
+      cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
+      make install -j"$(nproc)"
+    )
+  fi
+
+  # Download Tera Renderer
+  if [ ! -f ${ACADOS_DIR}/bin/t_renderer ]; then
+    echo "[Setup Acados] Downloading tera_renderer..."
+    mkdir -p ${ACADOS_DIR}/bin
+    curl -L https://github.com/acados/tera_renderer/releases/download/v0.0.34/t_renderer-v0.0.34-linux \
+      -o ${ACADOS_DIR}/bin/t_renderer
+    chmod +x ${ACADOS_DIR}/bin/t_renderer
+  fi
+) 9>"${PIXI_PROJECT_ROOT}/.pixi/setup.lock"
 
 # Check if pip is installed
 if ! command -v pip >/dev/null 2>&1; then
@@ -32,30 +58,10 @@ if ! command -v pip >/dev/null 2>&1; then
   exit 1
 fi
 
-# Build Acados
-if [ ! -f ${ACADOS_DIR}/lib/libacados.so ]; then
-  echo "[Setup Acados] Building acados..."
-  mkdir -p ${ACADOS_DIR}/build
-  (
-    cd ${ACADOS_DIR}/build
-    cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
-    make install -j"$(nproc)"
-  )
-fi
-
-# Install Acados Python interface
+# Install Acados Python interface into this environment
 if ! pip show acados-template >/dev/null 2>&1; then
   echo "[Setup Acados] Installing acados Python interface..."
   pip install -e ${ACADOS_DIR}/interfaces/acados_template
-fi
-
-# Download Tera Renderer
-if [ ! -f ${ACADOS_DIR}/bin/t_renderer ]; then
-  echo "[Setup Acados] Downloading tera_renderer..."
-  mkdir -p ${ACADOS_DIR}/bin
-  curl -L https://github.com/acados/tera_renderer/releases/download/v0.0.34/t_renderer-v0.0.34-linux \
-    -o ${ACADOS_DIR}/bin/t_renderer
-  chmod +x ${ACADOS_DIR}/bin/t_renderer
 fi
 
 # Setting Environment Variables

@@ -222,7 +222,7 @@ Evaluation scripts and tests that report such an error call these instead of com
 ## Special Setup Notes
 
 **IsaacGym**: Not available from PyPI, and pixi resolves its path while solving the `aerial-gym`
-environment. Run `pixi run setup-isaacgym` before `pixi install`.
+environment. Run `pixi run --frozen setup-isaacgym` before `pixi install`.
 
 **Activation builds**: The first entry into an environment builds its native dependencies, which
 takes a while. `setup_mocap.sh` builds `motion_capture_tracking` into `ros_ws/`,
