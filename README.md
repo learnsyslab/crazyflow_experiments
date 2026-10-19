@@ -136,3 +136,19 @@ pixi run test-all   # runs all tests in their respective environments
 ```
 
 Results go to `results/` and checkpoints to `saves/`, both resolved through `utils/paths.py`.
+
+## Citation
+
+If you use this code, please cite the Crazyflow paper.
+
+```bibtex
+@misc{schuck2026crazyflow,
+      title={Crazyflow: An Accurate, GPU-Accelerated, Differentiable Drone Simulator in JAX},
+      author={Martin Schuck and Marcel P. Rath and Yufei Hua and Abhishek Goudar and SiQi Zhou and Angela P. Schoellig},
+      year={2026},
+      eprint={2606.01478},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2606.01478},
+}
+```

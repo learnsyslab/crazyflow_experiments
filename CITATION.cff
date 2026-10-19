@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+message: If you use this code, please cite the Crazyflow paper.
+title: Crazyflow Experiments
+authors:
+  - given-names: Martin
+    family-names: Schuck
+  - given-names: Marcel P.
+    family-names: Rath
+  - given-names: Yufei
+    family-names: Hua
+  - given-names: Abhishek
+    family-names: Goudar
+  - given-names: SiQi
+    family-names: Zhou
+  - given-names: Angela P.
+    family-names: Schoellig
+repository-code: https://github.com/learnsyslab/crazyflow_experiments
+license: MIT
+preferred-citation:
+  type: article
+  title: "Crazyflow: An Accurate, GPU-Accelerated, Differentiable Drone Simulator in JAX"
+  authors:
+    - given-names: Martin
+      family-names: Schuck
+    - given-names: Marcel P.
+      family-names: Rath
+    - given-names: Yufei
+      family-names: Hua
+    - given-names: Abhishek
+      family-names: Goudar
+    - given-names: SiQi
+      family-names: Zhou
+    - given-names: Angela P.
+      family-names: Schoellig
+  year: 2026
+  journal: arXiv preprint arXiv:2606.01478
+  doi: 10.48550/arXiv.2606.01478
+  url: https://arxiv.org/abs/2606.01478
